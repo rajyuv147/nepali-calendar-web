@@ -23,7 +23,7 @@ export const metadata = {
   authors: [{ name: "Yuvaraj" }],
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icons/icon-72x72.png",
     apple: "/icons/icon-192x192.png",
   },
   openGraph: {

@@ -3,6 +3,9 @@ import ConverterView from '../../components/ConverterView';
 export const metadata = {
     title: "Nepali Date Converter - BS to AD & AD to BS | नेपालको पात्रो",
     description: "Convert dates between Bikram Sambat (BS) and Gregorian (AD) calendars easily.",
+    alternates: {
+        canonical: 'https://calendarofnepal.com/date-conversion',
+    },
 };
 
 export default function ConverterPage() {

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import holidaysData from '../data/holidays.json';
 import { NEPALI_MONTHS, ENGLISH_MONTHS } from '../utils/calendar';
 import { toNepaliDigits, bsToAd } from '../utils/converter';
+import { CalendarPlus, Download } from 'lucide-react';
+import { downloadICS, getGoogleCalendarUrl, getNextDayDate } from '../utils/export';
 
 const HOLIDAY_TYPE_STYLES = {
     public: {
@@ -41,7 +43,7 @@ function getTypeStyle(type) {
 }
 
 export default function HolidaysView() {
-    const [selectedYear, setSelectedYear] = useState(2081);
+    const [selectedYear, setSelectedYear] = useState(2083);
 
     const handleYearChange = (e) => {
         setSelectedYear(parseInt(e.target.value));
@@ -78,31 +80,79 @@ export default function HolidaysView() {
 
     const YEARS = [2080, 2081, 2082, 2083];
 
+    const handleExportHolidayGoogle = (h) => {
+        const nextAdDate = getNextDayDate(h.adDate.year, h.adDate.month, h.adDate.day);
+        const url = getGoogleCalendarUrl(
+            h.name,
+            h.adDate,
+            nextAdDate,
+            `Public holiday (${h.type}) on ${h.day} ${NEPALI_MONTHS[h.month - 1]} ${selectedYear} BS.`
+        );
+        window.open(url, '_blank');
+    };
+
+    const handleExportHolidayICS = (h) => {
+        const nextAdDate = getNextDayDate(h.adDate.year, h.adDate.month, h.adDate.day);
+        const eventObj = {
+            summary: h.name,
+            startDate: h.adDate,
+            endDate: nextAdDate,
+            description: `Public holiday (${h.type}) on ${h.day} ${NEPALI_MONTHS[h.month - 1]} ${selectedYear} BS.`
+        };
+        downloadICS(`${h.name.replace(/[^a-zA-Z0-9\u0900-\u097F]/g, '_')}_holiday.ics`, [eventObj]);
+    };
+
+    const handleExportAllHolidays = () => {
+        if (allHolidays.length === 0) return;
+        const events = allHolidays.map(h => {
+            const nextAdDate = getNextDayDate(h.adDate.year, h.adDate.month, h.adDate.day);
+            return {
+                summary: h.name,
+                startDate: h.adDate,
+                endDate: nextAdDate,
+                description: `Public holiday (${h.type}) on ${h.day} ${NEPALI_MONTHS[h.month - 1]} ${selectedYear} BS.`
+            };
+        });
+        downloadICS(`Nepali_Holidays_${selectedYear}_BS.ics`, events);
+    };
+
     return (
         <div className="space-y-6">
             {/* Controls */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-200">
                 <div>
                     <p className="text-sm text-gray-500 dark:text-slate-400">Showing holidays for</p>
                     <p className="text-xl font-bold text-gray-900 dark:text-white">
                         {toNepaliDigits(selectedYear)} BS
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {YEARS.map(y => (
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        {YEARS.map(y => (
+                            <button
+                                key={y}
+                                id={`year-btn-${y}`}
+                                onClick={() => setSelectedYear(y)}
+                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
+                                    selectedYear === y
+                                        ? 'bg-red-600 text-white shadow-md scale-105'
+                                        : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                                }`}
+                            >
+                                {y}
+                            </button>
+                        ))}
+                    </div>
+                    {allHolidays.length > 0 && (
                         <button
-                            key={y}
-                            id={`year-btn-${y}`}
-                            onClick={() => setSelectedYear(y)}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                                selectedYear === y
-                                    ? 'bg-red-600 text-white shadow-md scale-105'
-                                    : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                            }`}
+                            onClick={handleExportAllHolidays}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-750 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer"
+                            title="Download all holidays of this year as a single .ics calendar file"
                         >
-                            {y}
+                            <Download size={16} />
+                            Download All Holidays (.ics)
                         </button>
-                    ))}
+                    )}
                 </div>
             </div>
 
@@ -168,6 +218,24 @@ export default function HolidaysView() {
                                                 <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-nepali">
                                                     {toNepaliDigits(h.day)} {NEPALI_MONTHS[h.month - 1]}, {toNepaliDigits(selectedYear)}
                                                 </p>
+                                            </div>
+
+                                            {/* Export Actions */}
+                                            <div className="flex items-center gap-1 opacity-100 md:opacity-40 md:group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0">
+                                                <button
+                                                    onClick={() => handleExportHolidayGoogle(h)}
+                                                    title="Add to Google Calendar"
+                                                    className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                                                >
+                                                    <CalendarPlus size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleExportHolidayICS(h)}
+                                                    title="Download iCal (.ics)"
+                                                    className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                                                >
+                                                    <Download size={16} />
+                                                </button>
                                             </div>
 
                                             {/* Right side */}

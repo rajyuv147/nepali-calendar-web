@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: '/privacy-policy',
+        destination: '/privacy',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

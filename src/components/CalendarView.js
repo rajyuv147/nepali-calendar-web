@@ -16,6 +16,8 @@ import {
     getHoliday
 } from '../utils/calendar';
 import { useEvents } from '../hooks/useEvents';
+import { CalendarPlus, Download, Trash2 } from 'lucide-react';
+import { downloadICS, getGoogleCalendarUrl, getNextDayDate } from '../utils/export';
 
 export default function CalendarView() {
     const [currentYear, setCurrentYear] = useState(2081);
@@ -73,6 +75,30 @@ export default function CalendarView() {
         } else {
             alert('Failed to save event');
         }
+    };
+
+    const handleExportGoogle = (eventName) => {
+        const adDate = bsToAd(selectedDate.year, selectedDate.month, selectedDate.day);
+        const nextAdDate = getNextDayDate(adDate.year, adDate.month, adDate.day);
+        const url = getGoogleCalendarUrl(
+            eventName,
+            adDate,
+            nextAdDate,
+            `Event exported from Nepali Calendar (नेपालको पात्रो) for ${selectedDate.day} ${NEPALI_MONTHS[selectedDate.month - 1]} ${selectedDate.year} BS.`
+        );
+        window.open(url, '_blank');
+    };
+
+    const handleExportICS = (eventName) => {
+        const adDate = bsToAd(selectedDate.year, selectedDate.month, selectedDate.day);
+        const nextAdDate = getNextDayDate(adDate.year, adDate.month, adDate.day);
+        const eventObj = {
+            summary: eventName,
+            startDate: adDate,
+            endDate: nextAdDate,
+            description: `Event exported from Nepali Calendar (नेपालको पात्रो) for ${selectedDate.day} ${NEPALI_MONTHS[selectedDate.month - 1]} ${selectedDate.year} BS.`
+        };
+        downloadICS(`${eventName.replace(/[^a-zA-Z0-9\u0900-\u097F]/g, '_')}_event.ics`, [eventObj]);
     };
 
     const renderCalendarGrid = () => {
@@ -246,17 +272,39 @@ export default function CalendarView() {
                             const dayOfWeek = (getFirstDayOfMonth(selectedDate.year, selectedDate.month) + selectedDate.day - 1) % 7;
                             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                             if (holiday || isWeekend) {
+                                const title = holiday ? holiday.name : 'साप्ताहिक बिदा (Weekly Holiday)';
+                                const typeLabel = holiday ? (holiday.type === 'festival' ? 'चाडपर्व' : 'सार्वजनिक बिदा') : 'शनिबार/आइतबार साप्ताहिक बिदा';
                                 return (
-                                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/30 flex items-start gap-3">
-                                        <span className="text-2xl">🎉</span>
-                                        <div>
-                                            <h4 className="font-bold text-red-800 dark:text-red-350 font-nepali">
-                                                {holiday ? holiday.name : 'साप्ताहिक बिदा (Weekly Holiday)'}
-                                            </h4>
-                                            <p className="text-xs text-red-650 dark:text-red-400 mt-0.5 font-nepali">
-                                                {holiday ? (holiday.type === 'festival' ? 'चाडपर्व' : 'सार्वजनिक बिदा') : 'शनिबार/आइतबार साप्ताहिक बिदा'}
-                                            </p>
+                                    <div className="mb-6 p-4 bg-red-50/70 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/30 flex items-center justify-between gap-3">
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-2xl">🎉</span>
+                                            <div>
+                                                <h4 className="font-bold text-red-800 dark:text-red-350 font-nepali">
+                                                    {title}
+                                                </h4>
+                                                <p className="text-xs text-red-650 dark:text-red-400 mt-0.5 font-nepali">
+                                                    {typeLabel}
+                                                </p>
+                                            </div>
                                         </div>
+                                        {holiday && (
+                                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                <button
+                                                    onClick={() => handleExportGoogle(holiday.name)}
+                                                    title="Add to Google Calendar"
+                                                    className="p-2 rounded-xl text-blue-600 hover:bg-blue-100/50 dark:text-blue-400 dark:hover:bg-blue-950/40 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                                                >
+                                                    <CalendarPlus size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleExportICS(holiday.name)}
+                                                    title="Download iCal (.ics)"
+                                                    className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-100/50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                                                >
+                                                    <Download size={18} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             }
@@ -274,16 +322,33 @@ export default function CalendarView() {
                                             {customEvents.map((event, index) => (
                                                 <div key={index} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-slate-950 hover:bg-gray-100 dark:hover:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 transition-colors">
                                                     <span className="text-sm font-medium text-gray-800 dark:text-slate-200 font-nepali">{event.name}</span>
-                                                    <button
-                                                        onClick={() => {
-                                                            if (confirm(`Delete event "${event.name}"?`)) {
-                                                                deleteEvent(selectedDate.year, selectedDate.month, selectedDate.day, index);
-                                                            }
-                                                        }}
-                                                        className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium hover:bg-red-50 dark:hover:bg-red-950/20 px-2 py-1 rounded-lg transition-all cursor-pointer"
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => handleExportGoogle(event.name)}
+                                                            title="Add to Google Calendar"
+                                                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                                                        >
+                                                            <CalendarPlus size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleExportICS(event.name)}
+                                                            title="Download iCal (.ics)"
+                                                            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                                                        >
+                                                            <Download size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm(`Delete event "${event.name}"?`)) {
+                                                                    deleteEvent(selectedDate.year, selectedDate.month, selectedDate.day, index);
+                                                                }
+                                                            }}
+                                                            title="Delete Event"
+                                                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>

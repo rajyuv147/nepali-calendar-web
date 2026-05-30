@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Calendar, ArrowLeftRight, Award, Clock, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import FAQ from '../components/FAQ';
 import SEOContent from '../components/SEOContent';
 import { getCurrentBSDate, toNepaliDigits } from '../utils/converter';
 import { NEPALI_MONTHS, getHoliday } from '../utils/calendar';
@@ -51,10 +52,7 @@ export default function LandingPage() {
               🇳🇵 Complete Calendar & Converter Suite
             </div>
 
-            {/* Logo Integration */}
-            <div className="flex justify-center mb-6">
-              <img src="/logo.png" alt="नेपालको पात्रो" className="h-20 md:h-24 w-auto drop-shadow-md dark:brightness-110" />
-            </div>
+
 
             <h1 className="text-5xl md:text-7xl font-extrabold mb-4 font-nepali leading-tight tracking-tight text-slate-900 dark:text-white">
               नेपालको पात्रो
@@ -78,13 +76,21 @@ export default function LandingPage() {
                 <span>View Calendar</span>
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link
-                href="/date-conversion"
-                className="group bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-850 transition-all duration-300 flex items-center gap-2 shadow-sm"
+              <a
+                href="https://chromewebstore.google.com/detail/hkajmbocfbajpknncimimgffjnpbhifg?utm_source=item-share-cb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-850 transition-all duration-300 flex items-center gap-2 shadow-sm cursor-pointer"
               >
-                <ArrowLeftRight className="w-5 h-5 text-slate-500 dark:text-slate-450" />
-                <span>Convert Date</span>
-              </Link>
+                <svg className="w-5 h-5 text-red-500/80 dark:text-red-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="4" />
+                  <line x1="21.17" y1="8" x2="12" y2="8" />
+                  <line x1="3.95" y1="6.06" x2="8.54" y2="14" />
+                  <line x1="10.88" y1="21.94" x2="15.46" y2="14" />
+                </svg>
+                <span>Add Extension</span>
+              </a>
             </div>
           </div>
         </section>
@@ -237,6 +243,62 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* FAQ JSON-LD Schema for AEO/SEO Search engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'How is the Bikram Sambat (BS) calendar different from the Gregorian (AD) calendar?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Bikram Sambat (BS) is the official solar-lunar calendar of Nepal. It is approximately 56 years and 8 months ahead of the Gregorian calendar (AD). While the Gregorian calendar relies purely on the solar cycle, Bikram Sambat incorporates both solar sidereal cycles and lunar phases (Tithis), which is why major festivals like Dashain and Tihar fall on different English calendar dates every year.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'How do I convert a date from BS to AD or AD to BS?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'You can convert dates instantly using our precision Date Converter tool. Navigate to the Converter page, choose either \'BS to AD\' or \'AD to BS\', select your desired year, month, and day, and our system will map the dates with absolute accuracy, taking leap years and varying Nepali month lengths into account.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Where is my calendar event data stored?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Your privacy is our highest priority. All custom events, notes, and user preferences are saved strictly in your browser\'s Local Storage on your physical device. We collect zero personal data, and no information is ever transmitted to a server or external database. It is 100% private and offline-compatible.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Does the calendar cover all public and cultural holidays in Nepal?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Yes! Our comprehensive Holidays page tracks national public holidays, bank holidays, and cultural festivals for the years 2080, 2081, 2082, and 2083 BS. This includes widespread celebrations like Dashain, Tihar, Teej, Chhath, Lhosar, Eid, Christmas, and regional holidays across different provinces.'
+                  }
+                },
+                {
+                  '@type': 'Question',
+                  name: 'What are Tithis and how are they represented in this Nepali Patro?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Tithis are lunar phases used in Hindu astrology and cultural calculations. A tithi represents the time it takes for the longitudinal angle between the Sun and Moon to increase by 12 degrees. Our Nepali Calendar maps these lunar days on a daily basis so you can easily keep track of festivals, fasting days (Ekadashi), and auspicious family ceremonies.'
+                  }
+                }
+              ]
+            })
+          }}
+        />
+
+        {/* Frequently Asked Questions */}
+        <FAQ />
 
         {/* SEO Content */}
         <SEOContent />
